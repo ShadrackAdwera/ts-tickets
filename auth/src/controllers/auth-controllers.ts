@@ -38,6 +38,8 @@ const requestResetPassword = (req: Request, res: Response, next: NextFunction) =
         return next(new HttpError('Invalid inputs', 422));
     }
 
+    console.log(email);
+
     // check if email exists in DB
     // create a reset token, modify user to add reset token + expiry date for token
     // send reset link via email
