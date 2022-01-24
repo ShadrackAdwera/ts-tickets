@@ -7,6 +7,7 @@ import User from '../models/User';
 import HttpError from '../models/HttpError';
 
 interface UserProps {
+    _id: number,
     email: string;
     password: string;
 }
@@ -58,18 +59,43 @@ const signUp = async(req: Request, res: Response, next: NextFunction) => {
     res.status(201).json({message: 'Sign up successful', user: { id: user._id.toString(), email, token }});
 } 
 
-const login = (req: Request, res: Response, next: NextFunction) => {
+const login = async(req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body as { email: string, password: string };
+    let foundUser: UserProps;
+    let isPassword: boolean;
+    let token: string;
 
     const error = validationResult(req);
     if(!error.isEmpty()) {
         return next(new HttpError('Invalid inputs', 422));
     }
 
-    // check if email exists in DB
-    // check if password is correct
-    // generate auth tokens
-    res.status(200).json({message: 'Login successful', user: { email }});
+    try {
+        foundUser = await User.findOne({email}).exec();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again',500));
+    }
+
+    if(!foundUser) {
+        return next(new HttpError('This account does not exist, sign up in instead', 403));
+    }
+
+    try {
+        isPassword = await bcrypt.compare(password, foundUser.password);
+    } catch (error) {
+        return next(new HttpError('An error occured, try again',500));
+    }
+
+    if(!isPassword) {
+        return next(new HttpError('Invalid password', 422));
+    }
+    try {
+        token = jwt.sign({ id: foundUser._id.toString(), email }, 'jsonsupersecretkey',  { expiresIn: '1h' });
+    } catch (error) {
+        return next(new HttpError('An error occured, login to continue',500));
+    }
+
+    res.status(200).json({message: 'Login successful', user: { id: foundUser._id.toString(), email, token }});
 }
 
 const requestResetPassword = (req: Request, res: Response, next: NextFunction) => {
