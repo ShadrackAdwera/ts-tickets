@@ -15,4 +15,4 @@ app.use((error: Error ,_req: Request, res: Response, next: NextFunction) => {
     res.status(500).json({message: error.message || 'An error occured, try again'});
 })
 
-app.listen(5000, ()=>console.log('Auth service listening on PORT: 5000'));
+app.listen(5000, ()=>console.log('Auth service listening on PORT: 5000!'));
