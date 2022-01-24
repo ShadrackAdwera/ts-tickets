@@ -4,7 +4,7 @@
   "description": "auth microservice",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node-dev src/app.ts"
   },
   "keywords": [
     "auth",
