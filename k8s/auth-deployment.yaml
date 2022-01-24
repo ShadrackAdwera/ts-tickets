@@ -15,6 +15,10 @@ spec:
       containers:
         - name: auth
           image: adwera/ts-tickets-auth 
+          env:
+            - name: MONGO_URI
+              value: 'mongodb://auth-mongo-service:27017/auth'
+
 ---
 
 apiVersion: v1
