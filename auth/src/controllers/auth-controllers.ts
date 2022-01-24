@@ -1,19 +1,61 @@
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
+import User from '../models/User';
 import HttpError from '../models/HttpError';
 
-const signUp = (req: Request, res: Response, next: NextFunction) => {
+interface UserProps {
+    email: string;
+    password: string;
+}
+
+const signUp = async(req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body as { email: string, password: string };
+
+    let foundUser: UserProps;
+    let hashedPassword: string;
+    let token: string;
 
     const error = validationResult(req);
     if(!error.isEmpty()) {
         return next(new HttpError('Invalid inputs', 422));
     }
-    //check if email exists in DB
-    //hash and save account
-    //generate auth tokens
-    res.status(201).json({message: 'Sign up successful', user: { email }});
+    try {
+        foundUser = await User.findOne({email}).exec();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again',500));
+    }
+
+    if(foundUser) {
+        return next(new HttpError('User exists, log in instead', 403));
+    }
+
+    try {
+        hashedPassword = await bcrypt.hash(password, 12);
+    } catch (error) {
+        return next(new HttpError('An error occured, try again',500));
+    }
+
+    const user = new User<{
+        email: string, password: string, resetToken: any, tokenExpirationDate: any  
+    }>({
+        email, password, resetToken: null, tokenExpirationDate: undefined
+    });
+
+    try {
+        await user.save()
+    } catch (error) {
+        return next(new HttpError('An error occured, try again',500));
+    }
+
+    try {
+        token = jwt.sign({ id: user._id.toString(), email }, 'jsonsupersecretkey',  { expiresIn: '1h' });
+    } catch (error) {
+        return next(new HttpError('An error occured, login to continue',500));
+    }
+    res.status(201).json({message: 'Sign up successful', user: { id: user._id.toString(), email, token }});
 } 
 
 const login = (req: Request, res: Response, next: NextFunction) => {
