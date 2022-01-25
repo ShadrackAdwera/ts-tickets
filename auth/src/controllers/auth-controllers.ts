@@ -45,7 +45,7 @@ const signUp = async(req: Request, res: Response, next: NextFunction) => {
     const user: UserProps = new User<{
         email: string, password: string, resetToken: any, tokenExpirationDate: any  
     }>({
-        email, password, resetToken: null, tokenExpirationDate: undefined
+        email, password: hashedPassword, resetToken: null, tokenExpirationDate: undefined
     });
 
     try {
@@ -88,7 +88,6 @@ const login = async(req: Request, res: Response, next: NextFunction) => {
     } catch (error) {
         return next(new HttpError('An error occured, try again',500));
     }
-
     if(!isPassword) {
         return next(new HttpError('Invalid password', 422));
     }
