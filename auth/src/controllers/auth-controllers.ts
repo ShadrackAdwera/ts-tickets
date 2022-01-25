@@ -13,6 +13,15 @@ interface UserProps extends Document {
     password: string;
     resetToken: any;
     tokenExpirationDate: any;
+    createdAt: string;
+    updatedAt: string
+}
+
+interface UserAttributes {
+    email: string;
+    password: string;
+    resetToken: any;
+    tokenExpirationDate: any;
 }
 
 const signUp = async(req: Request, res: Response, next: NextFunction) => {
@@ -42,20 +51,18 @@ const signUp = async(req: Request, res: Response, next: NextFunction) => {
         return next(new HttpError('An error occured, try again',500));
     }
 
-    const user: UserProps = new User<{
-        email: string, password: string, resetToken: any, tokenExpirationDate: any  
-    }>({
+    const user: UserProps = new User<UserAttributes>({
         email, password: hashedPassword, resetToken: null, tokenExpirationDate: undefined
     });
 
     try {
-        await user.save()
+        await user.save()  
     } catch (error) {
         return next(new HttpError('An error occured, try again',500));
     }
 
     try {
-        token = jwt.sign({ id: user._id.toString() , email }, 'jsonsupersecretkey',  { expiresIn: '1h' });
+        token = jwt.sign({ id: user._id.toString() , email }, process.env.JWT_KEY!,  { expiresIn: '1h' });
     } catch (error) {
         return next(new HttpError('An error occured, login to continue',500));
     }
@@ -91,8 +98,9 @@ const login = async(req: Request, res: Response, next: NextFunction) => {
     if(!isPassword) {
         return next(new HttpError('Invalid password', 422));
     }
+
     try {
-        token = jwt.sign({ id: foundUser._id.toString(), email }, 'jsonsupersecretkey',  { expiresIn: '1h' });
+        token = jwt.sign({ id: foundUser._id.toString(), email }, process.env.JWT_KEY!,  { expiresIn: '1h' });
     } catch (error) {
         return next(new HttpError('An error occured, login to continue',500));
     }
