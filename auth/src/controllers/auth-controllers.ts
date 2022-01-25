@@ -24,6 +24,21 @@ interface UserAttributes {
     tokenExpirationDate: any;
 }
 
+const getCurrentUser = async(req: Request ,res: Response, next : NextFunction) => {
+    const { userId } = req.user!;
+    let currentUser: UserProps;
+    try {
+        currentUser = await User.findById(userId,'-password').exec()
+    } catch (error) {
+        return next(new HttpError('An error ocurred, try again',500));
+    }
+    if(!currentUser) {
+        return next(new HttpError('User does not exist', 404));
+    }
+
+    res.status(200).json({user: currentUser.toObject({getters: true})})
+}
+
 const signUp = async(req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body as { email: string, password: string };
 
@@ -177,4 +192,4 @@ const resetPassword = async(req: Request, res: Response, next: NextFunction) => 
     res.status(200).json({message: 'Password reset successful'});
 }
 
-export default { signUp, login, requestResetPassword, resetPassword };
+export default { getCurrentUser ,signUp, login, requestResetPassword, resetPassword };
