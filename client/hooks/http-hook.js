@@ -41,5 +41,3 @@ const useHttp = () => {
 }
 
 export default useHttp;
-
-export default useHttp;

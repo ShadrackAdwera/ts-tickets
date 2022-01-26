@@ -20,7 +20,7 @@ const reducer = (state, action) => {
   }
 }
 
-function AuthForm() {
+function AuthForm({onLogin, onSignUp}) {
   const [isLogin, setIsLogin] = useState(true);
   const [inputState, dispatch] = useReducer(reducer, initialState);
 
@@ -31,10 +31,11 @@ function AuthForm() {
   const submitHandler = (e) => {
     e.preventDefault();
     const { email, password } = inputState;
+    let url = 'http://192.168.49.2:31072';
     if(isLogin) {
-      console.log({email, password, status: 'Login' });  
+      onLogin(email, password, `${url}/login`);
     } else {
-      console.log({email, password, status: 'Sign Up' });
+      onSignUp(email, password, `${url}/sign-up`);
     }
   }
 
