@@ -6,6 +6,14 @@ const app = express();
 
 app.use(express.json());
 
+//CORS
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers','Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.setHeader('Access-Control-Allow-Methods','OPTIONS, PUT, PATCH, POST, DELETE, GET');
+    next();
+  });
+
 app.use('/api/auth', authRoutes);
 
 app.use((_req: Request, _res: Response, _next: NextFunction) => {
