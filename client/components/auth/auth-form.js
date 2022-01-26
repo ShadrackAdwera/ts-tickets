@@ -1,5 +1,7 @@
 import { TextField, Button } from '@mui/material';
 import { useState } from "react";
+
+import Layout from '../layout/layout';
 import classes from "./auth-form.module.css";
 
 function AuthForm() {
@@ -12,6 +14,7 @@ function AuthForm() {
   const submitHandler = () => {}
 
   return (
+    <Layout>
     <section className={classes.auth}>
       <h1>{isLogin ? "Login" : "Sign Up"}</h1>
       <form onSubmit={submitHandler}>
@@ -31,6 +34,7 @@ function AuthForm() {
         </div>
       </form>
     </section>
+    </Layout>
   );
 }
 
