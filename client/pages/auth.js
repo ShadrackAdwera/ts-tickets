@@ -27,7 +27,7 @@ const Auth = () => {
     }
   },[]);
 
-  return isLoading? <CircularProgress /> : <AuthForm onLogin={loginHandler} onSignUp={signUpHandler}/>
+  return <AuthForm onLogin={loginHandler} onSignUp={signUpHandler} isLoading={isLoading}/>
 };
 
 export default Auth;

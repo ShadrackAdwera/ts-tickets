@@ -1,195 +1,237 @@
-import { Request, Response, NextFunction } from 'express';
-import { validationResult } from 'express-validator';
-import { Document } from 'mongoose';
-import brypto from 'crypto';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
+import { validationResult } from "express-validator";
+import { Document } from "mongoose";
+import brypto from "crypto";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-import User from '../models/User';
-import HttpError from '../models/HttpError';
+import User from "../models/User";
+import HttpError from "../models/HttpError";
 
 interface UserProps extends Document {
-    email: string;
-    password: string;
-    resetToken: any;
-    tokenExpirationDate: any;
-    createdAt: string;
-    updatedAt: string
+  email: string;
+  password: string;
+  resetToken: any;
+  tokenExpirationDate: any;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface UserAttributes {
-    email: string;
-    password: string;
-    resetToken: any;
-    tokenExpirationDate: any;
+  email: string;
+  password: string;
+  resetToken: any;
+  tokenExpirationDate: any;
 }
 
-const getCurrentUser = async(req: Request ,res: Response, next : NextFunction) => {
-    const { userId } = req.user!;
-    let currentUser: UserProps;
-    try {
-        currentUser = await User.findById(userId,'-password').exec()
-    } catch (error) {
-        return next(new HttpError('An error ocurred, try again',500));
-    }
-    if(!currentUser) {
-        return next(new HttpError('User does not exist', 404));
-    }
+const getCurrentUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.user!;
+  let currentUser: UserProps;
+  try {
+    currentUser = await User.findById(userId, "-password").exec();
+  } catch (error) {
+    return next(new HttpError("An error ocurred, try again", 500));
+  }
+  if (!currentUser) {
+    return next(new HttpError("User does not exist", 404));
+  }
 
-    res.status(200).json({user: currentUser.toObject({getters: true})})
-}
+  res.status(200).json({ user: currentUser.toObject({ getters: true }) });
+};
 
-const signUp = async(req: Request, res: Response, next: NextFunction) => {
-    const { email, password } = req.body as { email: string, password: string };
+const signUp = async (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body as { email: string; password: string };
 
-    let foundUser: UserProps;
-    let hashedPassword: string;
-    let token: string;
+  let foundUser: UserProps;
+  let hashedPassword: string;
+  let token: string;
 
-    const error = validationResult(req);
-    if(!error.isEmpty()) {
-        return next(new HttpError('Invalid inputs', 422));
-    }
-    try {
-        foundUser = await User.findOne({email}).exec();
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return next(new HttpError("Invalid inputs", 422));
+  }
+  try {
+    foundUser = await User.findOne({ email }).exec();
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
 
-    if(foundUser) {
-        return next(new HttpError('User exists, log in instead', 403));
-    }
+  if (foundUser) {
+    return next(new HttpError("User exists, log in instead", 403));
+  }
 
-    try {
-        hashedPassword = await bcrypt.hash(password, 12);
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
 
-    const user: UserProps = new User<UserAttributes>({
-        email, password: hashedPassword, resetToken: null, tokenExpirationDate: undefined
+  const user: UserProps = new User<UserAttributes>({
+    email,
+    password: hashedPassword,
+    resetToken: null,
+    tokenExpirationDate: undefined,
+  });
+
+  try {
+    await user.save();
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
+
+  try {
+    token = jwt.sign({ id: user._id.toString(), email }, process.env.JWT_KEY!, {
+      expiresIn: "1h",
     });
+  } catch (error) {
+    return next(new HttpError("An error occured, login to continue", 500));
+  }
+  res
+    .status(201)
+    .json({
+      message: "Sign up successful",
+      user: { id: user._id.toString(), email, token },
+    });
+};
 
-    try {
-        await user.save()  
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
+const login = async (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body as { email: string; password: string };
+  let foundUser: UserProps;
+  let isPassword: boolean;
+  let token: string;
 
-    try {
-        token = jwt.sign({ id: user._id.toString() , email }, process.env.JWT_KEY!,  { expiresIn: '1h' });
-    } catch (error) {
-        return next(new HttpError('An error occured, login to continue',500));
-    }
-    res.status(201).json({message: 'Sign up successful', user: { id: user._id.toString(), email, token }});
-} 
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return next(new HttpError("Invalid inputs", 422));
+  }
 
-const login = async(req: Request, res: Response, next: NextFunction) => {
-    const { email, password } = req.body as { email: string, password: string };
-    let foundUser: UserProps;
-    let isPassword: boolean;
-    let token: string;
+  try {
+    foundUser = await User.findOne({ email }).exec();
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
 
-    const error = validationResult(req);
-    if(!error.isEmpty()) {
-        return next(new HttpError('Invalid inputs', 422));
-    }
+  if (!foundUser) {
+    return next(
+      new HttpError("This account does not exist, sign up in instead", 403)
+    );
+  }
 
-    try {
-        foundUser = await User.findOne({email}).exec();
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
+  try {
+    isPassword = await bcrypt.compare(password, foundUser.password);
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
+  if (!isPassword) {
+    return next(new HttpError("Invalid password", 422));
+  }
 
-    if(!foundUser) {
-        return next(new HttpError('This account does not exist, sign up in instead', 403));
-    }
+  try {
+    token = jwt.sign(
+      { id: foundUser._id.toString(), email },
+      process.env.JWT_KEY!,
+      { expiresIn: "1h" }
+    );
+  } catch (error) {
+    return next(new HttpError("An error occured, login to continue", 500));
+  }
 
-    try {
-        isPassword = await bcrypt.compare(password, foundUser.password);
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
-    if(!isPassword) {
-        return next(new HttpError('Invalid password', 422));
-    }
+  res
+    .status(200)
+    .json({
+      message: "Login successful",
+      user: { id: foundUser._id.toString(), email, token },
+    });
+};
 
-    try {
-        token = jwt.sign({ id: foundUser._id.toString(), email }, process.env.JWT_KEY!,  { expiresIn: '1h' });
-    } catch (error) {
-        return next(new HttpError('An error occured, login to continue',500));
-    }
+const requestResetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email } = req.body as { email: string };
+  let foundUser: UserProps;
 
-    res.status(200).json({message: 'Login successful', user: { id: foundUser._id.toString(), email, token }});
-}
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return next(new HttpError("Invalid inputs", 422));
+  }
 
-const requestResetPassword = async(req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body as { email: string };
-    let foundUser: UserProps;
+  try {
+    foundUser = await User.findOne({ email }).exec();
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
 
-    const error = validationResult(req);
-    if(!error.isEmpty()) {
-        return next(new HttpError('Invalid inputs', 422));
-    }
+  if (!foundUser) {
+    return next(
+      new HttpError("This account does not exist, sign up in instead", 403)
+    );
+  }
 
-    try {
-        foundUser = await User.findOne({email}).exec();
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
+  const authToken = brypto.randomBytes(64).toString("hex");
+  const tokenExpiration = Date.now() + 3600000;
+  foundUser.resetToken = authToken;
+  foundUser.tokenExpirationDate = new Date(tokenExpiration);
+  // send reset link via email--- https://your-site/${resetToken}/reset-password
 
-    if(!foundUser) {
-        return next(new HttpError('This account does not exist, sign up in instead', 403));
-    }
+  try {
+    await foundUser.save();
+  } catch (error) {}
 
-    const authToken = brypto.randomBytes(64).toString('hex');
-    const tokenExpiration = Date.now() + 3600000;
-    foundUser.resetToken = authToken;
-    foundUser.tokenExpirationDate = new Date(tokenExpiration);
-    // send reset link via email--- https://your-site/${resetToken}/reset-password
+  res.status(200).json({ message: "Reset link sent via email" });
+};
 
-    try {
-        await foundUser.save();
-    } catch (error) {
-        
-    }
+const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { password } = req.body as { email: string; password: string };
+  const resetToken = <string>req.params?.resetToken;
+  let foundUser: UserProps;
+  let newPassword: string;
 
-    res.status(200).json({message: 'Reset link sent via email'});
-}
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return next(new HttpError("Invalid inputs", 422));
+  }
 
-const resetPassword = async(req: Request, res: Response, next: NextFunction) => {
-    const { password } = req.body as { email: string, password: string };
-    const resetToken  = <string>req.params?.resetToken;
-    let foundUser: UserProps;
-    let newPassword: string;
+  try {
+    foundUser = await User.findOne({
+      resetToken,
+      tokenExpirationDate: { $gt: Date.now() },
+    });
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
 
-    const error = validationResult(req);
-    if(!error.isEmpty()) {
-        return next(new HttpError('Invalid inputs', 422));
-    }
+  try {
+    newPassword = await bcrypt.hash(password, 12);
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
 
-    try {
-        foundUser = await User.findOne({resetToken, tokenExpirationDate: { $gt: Date.now() }});
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
+  foundUser.password = newPassword;
+  foundUser.resetToken = null;
+  foundUser.tokenExpirationDate = undefined;
 
-    try {
-        newPassword = await bcrypt.hash(password, 12);
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
+  try {
+    await foundUser.save();
+  } catch (error) {
+    return next(new HttpError("An error occured, try again", 500));
+  }
+  res.status(200).json({ message: "Password reset successful" });
+};
 
-    foundUser.password = newPassword;
-    foundUser.resetToken = null;
-    foundUser.tokenExpirationDate = undefined;
-    
-    try {
-        await foundUser.save();
-    } catch (error) {
-        return next(new HttpError('An error occured, try again',500));
-    }
-    res.status(200).json({message: 'Password reset successful'});
-}
-
-export default { getCurrentUser ,signUp, login, requestResetPassword, resetPassword };
+export default {
+  getCurrentUser,
+  signUp,
+  login,
+  requestResetPassword,
+  resetPassword,
+};

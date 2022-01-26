@@ -1,4 +1,4 @@
-import { TextField, Button } from '@mui/material';
+import { TextField, Button, CircularProgress } from '@mui/material';
 import { useState, useReducer } from "react";
 
 import Layout from '../layout/layout';
@@ -20,7 +20,7 @@ const reducer = (state, action) => {
   }
 }
 
-function AuthForm({onLogin, onSignUp}) {
+function AuthForm({onLogin, onSignUp, isLoading}) {
   const [isLogin, setIsLogin] = useState(true);
   const [inputState, dispatch] = useReducer(reducer, initialState);
 
@@ -31,7 +31,7 @@ function AuthForm({onLogin, onSignUp}) {
   const submitHandler = (e) => {
     e.preventDefault();
     const { email, password } = inputState;
-    let url = 'http://192.168.49.2:31072';
+    let url = 'http://192.168.49.2:31072/api/auth';
     if(isLogin) {
       onLogin(email, password, `${url}/login`);
     } else {
@@ -61,7 +61,7 @@ function AuthForm({onLogin, onSignUp}) {
             onChange={e=>dispatch({type: 'INPUT_PASSWORD', value: e.target.value})}/>
          </div>
         <div className={classes.actions}>
-          <Button type='submit'>{isLogin ? "Login" : "Create Account"}</Button>
+          {isLoading? <CircularProgress /> : <Button type='submit'>{isLogin ? "Login" : "Create Account"}</Button>}
           <Button type="button"
             className={classes.toggle}
             onClick={switchAuthModeHandler}>
