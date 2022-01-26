@@ -1,5 +1,4 @@
 import express, { NextFunction, Request, Response } from 'express';
-import mongoose from 'mongoose';
 
 import authRoutes from './routes/auth-routes';
 
@@ -20,24 +19,6 @@ app.use((error: Error ,_req: Request, res: Response, next: NextFunction) => {
     res.status(500).json({message: error.message || 'An error occured, try again'});
 });
 
+export default app;
 
-const start = async() => {
-    if(!process.env.JWT_KEY) {
-        throw new Error('JWT must be defined');
-    }
 
-    if(!process.env.MONGO_URI) {
-        throw new Error('MONGO_URI must be defined');
-    }
-
-    try {
-        await mongoose.connect(process.env.MONGO_URI);
-        app.listen(5000);
-    console.log('Auth service listening on PORT: 5000!')
-    } catch (error) {
-        console.log(error)
-    }
-
-}
-
-start();
