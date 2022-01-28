@@ -1,30 +1,50 @@
+import { getSession, signOut } from 'next-auth/client';
 import Link from 'next/link';
 
 import classes from './main-navigation.module.css';
 
-function MainNavigation() {
+function MainNavigation(props) {
+  const { session } = props; 
   return (
     <header className={classes.header}>
-      <Link href='/'>
+      {!session && <div className={classes.logo}>K8s Ticketing</div>}
+      {session && <Link href='/'>
         <a>
           <div className={classes.logo}>K8s Ticketing</div>
         </a>
-      </Link>
+      </Link>}
       <nav>
         <ul>
-          <li>
+          {!session && <li>
             <Link href='/auth'>Login</Link>
-          </li>
-          <li>
+          </li>}
+          {session && <li>
             <Link href='/profile'>Profile</Link>
-          </li>
-          <li>
-            <button onClick={()=>{}}>Logout</button>
-          </li>
+          </li>}
+          {session && <li>
+            <button onClick={signOut}>Logout</button>
+          </li>}
         </ul>
       </nav>
     </header>
   );
+}
+
+export async function getServerSideProps(context){
+  const session = await getSession({req: context.req});
+  if(!session) {
+    return {
+      redirect: {
+        destination: '/auth',
+        permanent: false
+      }
+    }
+  }
+  return {
+    props: {
+      session
+    }
+  }
 }
 
 export default MainNavigation;
