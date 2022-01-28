@@ -5,6 +5,11 @@ import classes from './main-navigation.module.css';
 
 function MainNavigation(props) {
   const { session } = props; 
+
+  const logoutHandler = () => {
+    signOut();
+  }
+
   return (
     <header className={classes.header}>
       {!session && <div className={classes.logo}>K8s Ticketing</div>}
@@ -22,7 +27,7 @@ function MainNavigation(props) {
             <Link href='/profile'>Profile</Link>
           </li>}
           {session && <li>
-            <button onClick={signOut}>Logout</button>
+            <button onClick={logoutHandler}>Logout</button>
           </li>}
         </ul>
       </nav>

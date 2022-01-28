@@ -1,5 +1,4 @@
 import { getSession, signOut } from 'next-auth/client';
-import { Button } from '@mui/material';
 import Head from 'next/head'
 import Layout from '../components/layout/layout'
 
@@ -13,9 +12,6 @@ const getAuth = (stringifiedAuth) => {
 export default function Home(props) {
   const { session } = props; 
   const authInfo = getAuth(session.user.email); 
-  const logoutHandler = () => {
-    signOut();
-  }
 
   return (
     <div className={styles.container}>
@@ -26,11 +22,10 @@ export default function Home(props) {
       </Head>
     <Layout>
       <p>Welcome to k8s tickets</p>
+      <div style={{margin: '1rem 0'}}></div>
       <p className={styles.description}>
           {`Your are ${authInfo && authInfo.token? 'Logged in': 'not logged in.'}`}
         </p>
-        <div style={{margin: '1rem 0'}}></div>
-        <Button variant="text" onClick={logoutHandler}>Logout</Button>
     </Layout>
     </div>
   )
