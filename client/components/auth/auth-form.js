@@ -33,7 +33,7 @@ function AuthForm({onLogin, onSignUp, isLoading}) {
     const { email, password } = inputState;
     let url = 'http://192.168.49.2:31072/api/auth';
     if(isLogin) {
-      onLogin(email, password, `${url}/login`);
+      onLogin(email, password);
     } else {
       onSignUp(email, password, `${url}/sign-up`);
     }

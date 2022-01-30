@@ -39,7 +39,7 @@ const Auth = () => {
     );
     if (response && response.user) {
       router.replace("/auth");
-      alert('Login to continue');
+      // alert('Login to continue');
     }
   }, []);
 

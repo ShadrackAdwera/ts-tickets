@@ -9,7 +9,7 @@ export default NextAuth({
         Providers.Credentials({
             async authorize(credentials) {
                 const { email, password } = credentials;
-                const response = await axios.post('http://104.155.158.22:5000/api/users/login', {
+                const response = await axios.post('http://192.168.49.2:31072/api/auth/login', {
                 email, password
                 });
                 console.log(response.data);
