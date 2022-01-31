@@ -4,9 +4,9 @@ import { Document } from "mongoose";
 import brypto from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { HttpError } from '@adwesh/common';
 
 import User from "../models/User";
-import HttpError from "../models/HttpError";
 
 interface UserProps extends Document {
   email: string;

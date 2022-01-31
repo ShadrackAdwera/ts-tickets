@@ -2,7 +2,7 @@ import { body } from "express-validator";
 import express from "express";
 
 import AuthControllers from "../controllers/auth-controllers";
-import checkAuth from "../middlewares/auth-middleware";
+import { checkAuth } from '@adwesh/common';
 
 const { getCurrentUser, login, signUp, requestResetPassword, resetPassword } =
   AuthControllers;
