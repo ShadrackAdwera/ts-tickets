@@ -1,15 +1,16 @@
 import NextAuth from "next-auth";
-import Providers from "next-auth/providers";
+import CredentialsProvider from "next-auth/providers/credentials";
 import axios from 'axios';
+
 
 export default NextAuth({
     session: {
         jwt: true
     },providers : [
-        Providers.Credentials({
+        CredentialsProvider({
             async authorize(credentials) {
                 const { email, password } = credentials;
-                const response = await axios.post('http://192.168.49.2:31072/api/auth/login', {
+                const response = await axios.post('http://192.168.49.2:31925/api/auth/login', {
                 email, password
                 });
                 console.log(response.data);
@@ -18,5 +19,6 @@ export default NextAuth({
                 }
             }
         })
+    
     ]
 });

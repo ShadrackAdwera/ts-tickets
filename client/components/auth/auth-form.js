@@ -20,7 +20,7 @@ const reducer = (state, action) => {
   }
 }
 
-function AuthForm({onLogin, onSignUp, isLoading}) {
+function AuthForm({onLogin, onSignUp, isLoading, session, signOut}) {
   const [isLogin, setIsLogin] = useState(true);
   const [inputState, dispatch] = useReducer(reducer, initialState);
 
@@ -31,7 +31,7 @@ function AuthForm({onLogin, onSignUp, isLoading}) {
   const submitHandler = (e) => {
     e.preventDefault();
     const { email, password } = inputState;
-    let url = 'http://192.168.49.2:31072/api/auth';
+    let url = 'http://192.168.49.2:31925/api/auth';
     if(isLogin) {
       onLogin(email, password);
     } else {
@@ -40,7 +40,7 @@ function AuthForm({onLogin, onSignUp, isLoading}) {
   }
 
   return (
-    <Layout>
+    <Layout signOut={signOut} session={session}>
     <section className={classes.auth}>
       <h1>{isLogin ? "Login" : "Sign Up"}</h1>
       <form onSubmit={submitHandler}>

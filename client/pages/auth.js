@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import React, { useCallback } from "react";
-import { signIn, getSession } from 'next-auth/client';
+import { signIn, getSession } from 'next-auth/react';
 
 import useHttp from "../hooks/http-hook";
 import AuthForm from "../components/auth/auth-form";

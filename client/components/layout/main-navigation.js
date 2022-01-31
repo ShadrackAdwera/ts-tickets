@@ -1,10 +1,8 @@
-import { getSession, signOut } from 'next-auth/client';
 import Link from 'next/link';
 
 import classes from './main-navigation.module.css';
 
-function MainNavigation(props) {
-  const { session } = props; 
+function MainNavigation({session, signOut}) {
 
   const logoutHandler = () => {
     signOut();
@@ -33,23 +31,6 @@ function MainNavigation(props) {
       </nav>
     </header>
   );
-}
-
-export async function getServerSideProps(context){
-  const session = await getSession({req: context.req});
-  if(!session) {
-    return {
-      redirect: {
-        destination: '/auth',
-        permanent: false
-      }
-    }
-  }
-  return {
-    props: {
-      session
-    }
-  }
 }
 
 export default MainNavigation;
