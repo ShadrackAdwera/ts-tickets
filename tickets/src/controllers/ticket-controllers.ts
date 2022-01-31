@@ -7,10 +7,9 @@ import Ticket from '../models/Ticket';
 
 interface TicketDoc extends Document {
     title: string;
-    userId: string
+    price: string;
+    userId: string;
 }
-
-
 
 const getTickets = async(req: Request, res: Response, next: NextFunction) => {
     let tickets: TicketDoc[];
@@ -47,11 +46,11 @@ const createTicket = async(req: Request, res: Response, next: NextFunction) => {
     if(!error.isEmpty()) {
         return next(new HttpError('Invalid ticket inputs', 422));
     }
-    const { title } = req.body;
+    const { title, price } = req.body;
     const id = req.user?.userId;
 
     const newTicket: TicketDoc = new Ticket({
-        title, userId: id
+        title, price, userId: id
     });
 
     try {
