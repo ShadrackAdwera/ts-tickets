@@ -17,7 +17,7 @@ router.get('/user', getUserTickets);
 
 router.post('/new', [
     body('title').trim().isLength({min: 6}),
-    body('price').trim().isLength({min: 2})
+    body('price').isFloat({min: 0})
 ], createTicket);
 
 router.patch('/:ticketId', [

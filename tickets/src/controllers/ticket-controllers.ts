@@ -7,7 +7,7 @@ import Ticket from '../models/Ticket';
 
 interface TicketDoc extends Document {
     title: string;
-    price: string;
+    price: number;
     userId: string;
 }
 

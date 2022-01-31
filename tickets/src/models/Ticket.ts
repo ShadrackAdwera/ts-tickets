@@ -3,7 +3,7 @@ import { Schema } from 'mongoose';
 
 const ticketsSchema = new Schema({
     title: { type: String, required: true },
-    price: { type: String, required: true },
+    price: { type: Number, required: true },
     userId: { type: Schema.Types.ObjectId, required: true }
 }, { timestamps: true, toJSON: { getters: true } });
 
