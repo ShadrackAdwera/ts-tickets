@@ -62,4 +62,41 @@ const createTicket = async(req: Request, res: Response, next: NextFunction) => {
     res.status(201).json({message: 'The ticket has been successfully created' ,ticket: newTicket})
 }
 
+const updateTicket = async(req: Request, res: Response, next: NextFunction) => {
+    const error: Result<ValidationError> = validationResult(req);
+    if(!error.isEmpty()) {
+        return next(new HttpError('Invalid ticket inputs', 422));
+    }
+    const ticketId = req.params.ticketId;
+    let ticket: TicketDoc;
+    const { title, price } = req.body;
+
+    if(!ticketId) {
+        return next(new HttpError('Invalid ticket', 400));
+    }
+
+    try {
+        ticket = await Ticket.findById(ticketId).exec();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again', 500));
+    }
+
+    if(!ticket) {
+        return next(new HttpError('This ticket does not exist!', 404));
+    }
+    // TODO: configure authorization here
+    //const id = req.user?.userId;
+
+    ticket.title = title;
+    ticket.price = price;
+    try {
+        await ticket.save();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again', 500));
+    }
+    res.status(200).json({message: 'Ticket updated successfully', ticket});
+}
+
+export default { getTickets, findTicketById, createTicket, updateTicket };
+
 
