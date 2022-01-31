@@ -6,12 +6,14 @@ import ticketControllers from '../controllers/ticket-controllers';
 
 const router: Router = Router();
 
-const { getTickets, findTicketById, createTicket, updateTicket } = ticketControllers;
+const { getTickets, findTicketById, createTicket, updateTicket, getUserTickets } = ticketControllers;
 
 router.get('/', getTickets);
 router.get('/:ticketId', findTicketById);
 
 router.use(checkAuth);
+
+router.get('/user', getUserTickets);
 
 router.post('/new', [
     body('title').trim().isLength({min: 6}),

@@ -41,6 +41,20 @@ const findTicketById = async(req: Request, res: Response, next: NextFunction) =>
     res.status(200).json({ticket});
 }
 
+const getUserTickets = async(req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.userId;
+
+    let foundTickets: TicketDoc[];
+
+    try {
+        foundTickets = await Ticket.find({ userId }).exec();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again', 500));
+    }
+
+    res.status(200).json({tickets: foundTickets});
+}
+
 const createTicket = async(req: Request, res: Response, next: NextFunction) => {
     const error: Result<ValidationError> = validationResult(req);
     if(!error.isEmpty()) {
@@ -97,6 +111,6 @@ const updateTicket = async(req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({message: 'Ticket updated successfully', ticket});
 }
 
-export default { getTickets, findTicketById, createTicket, updateTicket };
+export default { getTickets, findTicketById, createTicket, updateTicket, getUserTickets };
 
 
