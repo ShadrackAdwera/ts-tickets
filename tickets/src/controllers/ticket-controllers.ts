@@ -101,12 +101,9 @@ const updateTicket = async(req: Request, res: Response, next: NextFunction) => {
         return next(new HttpError('This ticket does not exist!', 404));
     }
 
-    if(ticket.userId !== foundUserId) {
+    if(ticket.userId.toString() !== foundUserId) {
         return next(new HttpError('You are not authorized to perform this action', 403));
     }
-
-    // TODO: configure authorization here
-    //const id = req.user?.userId;
 
     ticket.title = title;
     ticket.price = price;
