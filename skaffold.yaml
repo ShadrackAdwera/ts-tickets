@@ -24,13 +24,13 @@ build:
         manual:
           - dest: .
             src: 'src/**/*.ts'
-    - image: adwera/ts-client
-      context: client
-      docker:
-        dockerfile: Dockerfile
-      sync:
-        manual:
-          - dest: .
-            src: '**/*.js'
+    # - image: adwera/ts-client
+    #   context: client
+    #   docker:
+    #     dockerfile: Dockerfile
+    #   sync:
+    #     manual:
+    #       - dest: .
+    #         src: '**/*.js'
     
   

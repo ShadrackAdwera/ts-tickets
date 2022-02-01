@@ -13,7 +13,7 @@ router.get('/:ticketId', findTicketById);
 
 router.use(checkAuth);
 
-router.get('/user', getUserTickets);
+router.get('/user/all-tickets', getUserTickets);
 
 router.post('/new', [
     body('title').trim().isLength({min: 6}),

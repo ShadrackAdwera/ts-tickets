@@ -63,13 +63,14 @@ const createTicket = async(req: Request, res: Response, next: NextFunction) => {
     const { title, price } = req.body;
     const id = req.user?.userId;
 
-    const newTicket: TicketDoc = new Ticket({
+    const newTicket = new Ticket({
         title, price, userId: id
     });
 
     try {
         await newTicket.save();
     } catch (error) {
+        console.log(error);
         return next(new HttpError('An error occured, try again', 500));
     }
 
@@ -82,6 +83,7 @@ const updateTicket = async(req: Request, res: Response, next: NextFunction) => {
         return next(new HttpError('Invalid ticket inputs', 422));
     }
     const ticketId = req.params.ticketId;
+    const foundUserId = req.user?.userId;
     let ticket: TicketDoc;
     const { title, price } = req.body;
 
@@ -98,6 +100,11 @@ const updateTicket = async(req: Request, res: Response, next: NextFunction) => {
     if(!ticket) {
         return next(new HttpError('This ticket does not exist!', 404));
     }
+
+    if(ticket.userId !== foundUserId) {
+        return next(new HttpError('You are not authorized to perform this action', 403));
+    }
+
     // TODO: configure authorization here
     //const id = req.user?.userId;
 
