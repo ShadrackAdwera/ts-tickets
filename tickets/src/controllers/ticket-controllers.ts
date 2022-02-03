@@ -5,6 +5,7 @@ import { Document } from 'mongoose';
 
 import { natsWraper } from '../nats-wrapper';
 import { TicketCreatedPublisher } from '../events/publishers/ticket-created-publisher';
+import { TicketUpdatedPublisher } from '../events/publishers/ticket-updated-publisher';
 import Ticket from '../models/Ticket';
 
 interface TicketDoc extends Document {
@@ -76,6 +77,8 @@ const createTicket = async(req: Request, res: Response, next: NextFunction) => {
         return next(new HttpError('An error occured, try again', 500));
     }
 
+    // TODO: Implement a transaction between saving the created ticket to the DB and saving the event emitted to a separate db - incase failure occurs while emitting the event
+
     try {
         await new TicketCreatedPublisher(natsWraper.client).publish({
             id: newTicket._id.toString(),
@@ -123,6 +126,20 @@ const updateTicket = async(req: Request, res: Response, next: NextFunction) => {
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
+
+    // TODO: Implement a transaction between saving the updated ticket to the DB and saving the event emitted to a separate db - incase failure occurs while emitting an event
+
+    try {
+        await new TicketUpdatedPublisher(natsWraper.client).publish({
+            id: ticket._id.toString(),
+            title: ticket.title,
+            price: ticket.price,
+            userId: ticket.userId
+        });
+    } catch (error) {
+        console.log(error);
+    }
+
     res.status(200).json({message: 'Ticket updated successfully', ticket});
 }
 
