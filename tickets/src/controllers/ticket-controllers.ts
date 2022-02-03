@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Document } from 'mongoose';
 
 import Ticket from '../models/Ticket';
+import { TicketCreatedPublisher } from '../events/publishers/ticket-created-publisher';
 
 interface TicketDoc extends Document {
     title: string;
@@ -73,6 +74,15 @@ const createTicket = async(req: Request, res: Response, next: NextFunction) => {
         console.log(error);
         return next(new HttpError('An error occured, try again', 500));
     }
+
+    // try {
+    //     await new TicketCreatedPublisher(client).publish({
+    //         id: newTicket._id.toString(),
+    //         title: newTicket.title, price: newTicket.price, userId: newTicket.userId
+    //     })
+    // } catch (error) {
+    //     console.log(error);
+    // }
 
     res.status(201).json({message: 'The ticket has been successfully created' ,ticket: newTicket})
 }
