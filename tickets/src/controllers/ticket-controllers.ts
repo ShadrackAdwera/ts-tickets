@@ -3,8 +3,9 @@ import { validationResult, ValidationError, Result } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import { Document } from 'mongoose';
 
-import Ticket from '../models/Ticket';
+import { natsWraper } from '../nats-wrapper';
 import { TicketCreatedPublisher } from '../events/publishers/ticket-created-publisher';
+import Ticket from '../models/Ticket';
 
 interface TicketDoc extends Document {
     title: string;
@@ -75,14 +76,14 @@ const createTicket = async(req: Request, res: Response, next: NextFunction) => {
         return next(new HttpError('An error occured, try again', 500));
     }
 
-    // try {
-    //     await new TicketCreatedPublisher(client).publish({
-    //         id: newTicket._id.toString(),
-    //         title: newTicket.title, price: newTicket.price, userId: newTicket.userId
-    //     })
-    // } catch (error) {
-    //     console.log(error);
-    // }
+    try {
+        await new TicketCreatedPublisher(natsWraper.client).publish({
+            id: newTicket._id.toString(),
+            title: newTicket.title, price: newTicket.price, userId: newTicket.userId
+        })
+    } catch (error) {
+        console.log(error);
+    }
 
     res.status(201).json({message: 'The ticket has been successfully created' ,ticket: newTicket})
 }
