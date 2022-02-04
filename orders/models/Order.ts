@@ -16,7 +16,7 @@ const orderSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, required: true },
     status: { type: String, required: true, enum: [ "created", "cancelled", "awaiting_payment", "complete" ] },
     expiresAt: { type: Date, required: true },
-    ticketId: { type: Schema.Types.ObjectId, required: true }
+    ticket: { type: Schema.Types.ObjectId, required: true }
 }, { timestamps: true, toJSON: { getters: true } });
 
 export default mongoose.model('order', orderSchema);
