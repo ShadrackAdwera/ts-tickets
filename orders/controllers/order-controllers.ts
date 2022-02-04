@@ -17,7 +17,7 @@ interface TicketDoc extends Document {
 
 interface OrderDoc extends Document {
     userId: string;
-    expiresAt: number;
+    expiresAt: Date;
     status: OrderStatus;
     ticket: TicketDoc;
 }
@@ -66,6 +66,7 @@ const error = validationResult(req);
   let foundTicket: TicketDoc;
   let ticketReservationStatus;
 
+    //check for ticket existense in the DB
     const { ticketId } = req.body;
     try {
         foundTicket = await Ticket.findById(ticketId).exec();
@@ -104,6 +105,8 @@ const error = validationResult(req);
   } catch (error) {
       return next(new HttpError('Your order could not be completed, try again', 500));
   }
+
+  // TODO: Publish event saying an order was created
 
   res.status(201).json({message: 'Your order was successfully created', order: createdOrder})
 
