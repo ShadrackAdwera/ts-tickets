@@ -1,4 +1,4 @@
-import { HttpError } from '@adwesh/common';
+import { HttpError, OrderStatus } from '@adwesh/common';
 import { validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import { Document } from 'mongoose';
@@ -8,11 +8,25 @@ import Ticket from '../models/Ticket';
 
 const EXPIRATION_SECONDS = 15*60;
 
+interface TicketDoc extends Document {
+    title: string;
+    price: number;
+    version: number;
+    isReserved: () => boolean
+}
+
 interface OrderDoc extends Document {
     userId: string;
     expiresAt: number;
-    status: string;
-    ticketId: string;
+    status: OrderStatus;
+    ticket: TicketDoc;
+}
+
+interface OrderAttributes {
+    userId: string;
+    expiresAt: number;
+    status: OrderStatus;
+    ticket: TicketDoc;
 }
 
 
@@ -22,7 +36,7 @@ const getOrders = async(req: Request, res: Response, next: NextFunction) => {
     let foundOrders: OrderDoc[];
 
     try {
-        foundOrders = await Order.find({ userId }).exec();
+        foundOrders = await Order.find({ userId }).populate('ticket').exec();
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
@@ -34,7 +48,7 @@ const getOrderById = async(req: Request, res: Response, next: NextFunction) => {
     let foundOrder
 
     try {
-        foundOrder = await Order.find({ id: id, userId: req.user?.userId }).exec();    
+        foundOrder = await Order.find({ id: id, userId: req.user?.userId }).populate('ticket').exec();    
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
@@ -49,7 +63,7 @@ const error = validationResult(req);
   if (!error.isEmpty()) {
     return next(new HttpError("Invalid inputs", 422));
   }
-  let foundTicket;
+  let foundTicket: TicketDoc;
   let ticketReservationStatus;
 
     const { ticketId } = req.body;
@@ -64,7 +78,7 @@ const error = validationResult(req);
     }
 
  // TODO: Check if user exists
-    const userId = req.user?.userId;
+    const userId = req.user?.userId as string;
 
 //check if ticket is not reserved
     try {
@@ -78,9 +92,11 @@ const error = validationResult(req);
     }
 
     const expiration = new Date();
-    const createdOrder: OrderDoc = new Order({
-      userId: <string>userId, expiresAt: expiration.setSeconds(expiration.getSeconds() + EXPIRATION_SECONDS),
-      ticketId, status: 'created'
+    const createdOrder: OrderDoc = new Order<OrderAttributes>({
+      userId, 
+      expiresAt: expiration.setSeconds(expiration.getSeconds() + EXPIRATION_SECONDS),
+      status: OrderStatus.Created, 
+      ticket: foundTicket
   }) 
 
   try {
