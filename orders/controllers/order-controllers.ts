@@ -31,10 +31,10 @@ const getOrders = async(req: Request, res: Response, next: NextFunction) => {
 
 const getOrderById = async(req: Request, res: Response, next: NextFunction) => {
     const id  = req.params.id;
-    let foundOrder: OrderDoc;
+    let foundOrder
 
     try {
-        foundOrder = await Order.findById(id).exec();    
+        foundOrder = await Order.find({ id: id, userId: req.user?.userId }).exec();    
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
@@ -92,3 +92,10 @@ const error = validationResult(req);
   res.status(201).json({message: 'Your order was successfully created', order: createdOrder})
 
  }
+
+ const cancelOrder = async(req: Request, res: Response, next: NextFunction) => {
+
+     res.status(200).json({message: `Your order for ticket - - - has been cancelled!`});
+ }
+
+ export default { getOrders, getOrderById, createOrder, cancelOrder };

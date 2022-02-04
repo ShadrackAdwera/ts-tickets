@@ -1,6 +1,8 @@
 import { HttpError } from '@adwesh/common';
 import express, { NextFunction, Request, Response } from 'express';
 
+import orderRoutes from '../routes/order-routes';
+
 const app = express();
 
 app.use(express.json());
@@ -14,6 +16,7 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   });
 
 //use routes
+app.use('/api/routes', orderRoutes);
 
 app.use((_req: Request, _res: Response, _next: NextFunction) => {
     throw new HttpError('This method / route does not exist', 404);

@@ -36,8 +36,8 @@ const start = async() => {
         process.on('SIGTERM', () => natsWraper.client.close());
 
         await mongoose.connect(process.env.MONGO_URI);
-        app.listen(5001);
-    console.log('Orders service listening on PORT: 5001!')
+        app.listen(5002);
+    console.log('Orders service listening on PORT: 5002!')
     } catch (error) {
         console.log(error)
     }
