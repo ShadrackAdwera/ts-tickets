@@ -141,7 +141,7 @@ const error = validationResult(req);
     }
     // emit event
 
-     res.status(200).json({message: `Your order for ticket - - - has been cancelled!`});
+     res.status(200).json({message: `Your order ref: ${foundOrder.id} has been cancelled!`});
  }
 
  export default { getOrders, getOrderById, createOrder, cancelOrder };
