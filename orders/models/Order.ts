@@ -15,8 +15,8 @@ complete - order has reserved the ticket and user has paid the amount successful
 const orderSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, required: true },
     status: { type: String, required: true, enum: [ "created", "cancelled", "awaiting_payment", "complete" ] },
-    expiresAt: { type: Date, required: true },
-    ticket: { type: Schema.Types.ObjectId, required: true }
+    expiresAt: { type: Schema.Types.Date, required: true },
+    ticket: { type: Schema.Types.ObjectId, required: true, ref: 'Ticket' }
 }, { timestamps: true, toJSON: { getters: true } });
 
 export default mongoose.model('order', orderSchema);
