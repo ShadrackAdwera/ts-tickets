@@ -113,6 +113,32 @@ const error = validationResult(req);
  }
 
  const cancelOrder = async(req: Request, res: Response, next: NextFunction) => {
+    const { id  } = req.params;
+    let foundOrder: OrderDoc;
+    let userId = req.user?.userId as string
+    // find the order
+    try {
+        foundOrder = await Order.findById(id).exec();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again', 500));
+    }
+
+    if(!foundOrder) {
+        return next(new HttpError('This order does not exist', 404));
+    }
+
+    // authorization
+    if(foundOrder.userId!== userId) {
+        return next(new HttpError('You are not authorized to perform this action', 401));
+    }
+
+    foundOrder.status = OrderStatus.Cancelled;
+    //update expiration date??
+    try {
+        await foundOrder.save();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again', 500));
+    }
 
      res.status(200).json({message: `Your order for ticket - - - has been cancelled!`});
  }
