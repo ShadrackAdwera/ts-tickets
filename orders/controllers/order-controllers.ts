@@ -7,6 +7,7 @@ import Order from '../models/Order';
 import Ticket from '../models/Ticket';
 import { OrderCreatedPublisher } from '../events/publishers/order-created-publisher';
 import { natsWraper } from '../src/nats-wrapper';
+import { OrderCancelledPublisher } from '../events/publishers/order-cancelled-publisher';
 
 const EXPIRATION_SECONDS = 15*60;
 
@@ -113,8 +114,8 @@ const error = validationResult(req);
   try {
      await new OrderCreatedPublisher(natsWraper.client).publish({
          id: createdOrder.id, userId: createdOrder.userId, ticket: { 
-             id: foundTicket.id,
-             price: foundTicket.price
+             id: createdOrder.ticket.id,
+             price: createdOrder.ticket.price
           }, status: OrderStatus.Created, expiresAt: createdOrder.expiresAt.toISOString()
      })
   } catch (error) {
@@ -152,7 +153,17 @@ const error = validationResult(req);
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
-    // emit event
+    
+    try {
+        await new OrderCancelledPublisher(natsWraper.client).publish({
+            id: foundOrder.id, status: OrderStatus.Cancelled, userId: userId, ticket: {
+                id: foundOrder.ticket.id,
+                price: foundOrder.ticket.price
+            }
+        })
+    } catch (error) {
+        
+    }
 
      res.status(200).json({message: `Your order ref: ${foundOrder.id} has been cancelled!`});
  }
