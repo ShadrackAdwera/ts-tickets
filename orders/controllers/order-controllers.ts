@@ -118,7 +118,7 @@ const error = validationResult(req);
     let userId = req.user?.userId as string
     // find the order
     try {
-        foundOrder = await Order.findById(id).exec();
+        foundOrder = await Order.findById(id).populate('ticket').exec();
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
@@ -139,6 +139,7 @@ const error = validationResult(req);
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
+    // emit event
 
      res.status(200).json({message: `Your order for ticket - - - has been cancelled!`});
  }
