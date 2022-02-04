@@ -5,6 +5,8 @@ import { Document } from 'mongoose';
 
 import Order from '../models/Order';
 import Ticket from '../models/Ticket';
+import { OrderCreatedPublisher } from '../events/publishers/order-created-publisher';
+import { natsWraper } from '../src/nats-wrapper';
 
 const EXPIRATION_SECONDS = 15*60;
 
@@ -106,7 +108,18 @@ const error = validationResult(req);
       return next(new HttpError('Your order could not be completed, try again', 500));
   }
 
-  // TODO: Publish event saying an order was created
+  // TODO: transaction on emit and event and save to the DB.
+
+  try {
+     await new OrderCreatedPublisher(natsWraper.client).publish({
+         id: createdOrder.id, userId: createdOrder.userId, ticket: { 
+             id: foundTicket.id,
+             price: foundTicket.price
+          }, status: OrderStatus.Created, expiresAt: createdOrder.expiresAt.toISOString()
+     })
+  } catch (error) {
+      console.log(error);
+  }
 
   res.status(201).json({message: 'Your order was successfully created', order: createdOrder})
 
