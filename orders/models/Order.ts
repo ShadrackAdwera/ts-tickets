@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import { OrderStatus } from '@adwesh/common';
 
 /*Order Statuses
 created - order has been created but the ticket has not been reserved.
@@ -14,7 +15,7 @@ complete - order has reserved the ticket and user has paid the amount successful
 
 const orderSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, required: true },
-    status: { type: String, required: true, enum: [ "created", "cancelled", "awaiting_payment", "complete" ] },
+    status: { type: String, required: true, enum: Object.values(OrderStatus), default: OrderStatus.Created },
     expiresAt: { type: Schema.Types.Date, required: true },
     ticket: { type: Schema.Types.ObjectId, required: true, ref: 'Ticket' }
 }, { timestamps: true, toJSON: { getters: true } });
