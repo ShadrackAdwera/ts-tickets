@@ -89,7 +89,10 @@ const createTicket = async(req: Request, res: Response, next: NextFunction) => {
     try {
         await new TicketCreatedPublisher(natsWraper.client).publish({
             id: newTicket._id.toString(),
-            title: newTicket.title, price: newTicket.price, userId: newTicket.userId
+            title: newTicket.title, 
+            price: newTicket.price, 
+            userId: newTicket.userId, 
+            version: newTicket.version
         })
     } catch (error) {
         console.log(error);
@@ -141,7 +144,8 @@ const updateTicket = async(req: Request, res: Response, next: NextFunction) => {
             id: ticket._id.toString(),
             title: ticket.title,
             price: ticket.price,
-            userId: ticket.userId
+            userId: ticket.userId,
+            version: ticket.version
         });
     } catch (error) {
         console.log(error);
