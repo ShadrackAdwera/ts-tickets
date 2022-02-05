@@ -8,10 +8,17 @@ import { TicketCreatedPublisher } from '../events/publishers/ticket-created-publ
 import { TicketUpdatedPublisher } from '../events/publishers/ticket-updated-publisher';
 import Ticket from '../models/Ticket';
 
+interface TicketAttributes {
+    title: string;
+    price: number;
+    userId: string; 
+}
+
 interface TicketDoc extends Document {
     title: string;
     price: number;
     userId: string;
+    version: number;
 }
 
 const getTickets = async(req: Request, res: Response, next: NextFunction) => {
@@ -64,9 +71,9 @@ const createTicket = async(req: Request, res: Response, next: NextFunction) => {
         return next(new HttpError('Invalid ticket inputs', 422));
     }
     const { title, price } = req.body;
-    const id = req.user?.userId;
+    const id = req.user?.userId as string;
 
-    const newTicket = new Ticket({
+    const newTicket: TicketDoc = new Ticket<TicketAttributes>({
         title, price, userId: id
     });
 
