@@ -9,15 +9,17 @@ interface TicketDoc extends Document {
   id: string;
   title: string;
   price: number;
+  version: number;
 }
 
 export class TicketUpdatedListener extends Listener<TicketUpdatedEvent> {
   subject: Subjects.TicketUpdated = Subjects.TicketUpdated;
   queueGroupName: string = ORDERS_QUEUE_GROUP;
   async onMessage(data: TicketUpdatedEvent["data"], msg: Message) {
-    const { id, title, price } = data;
+    const { id, title, price, version } = data;
     let foundTicket: TicketDoc[];
-    foundTicket = await Ticket.find({ id }).exec();
+    // find event by Id and previous version
+    foundTicket = await Ticket.find({ id, version: version-1 }).exec();
 
     if (foundTicket.length === 0) {
       throw new Error("Ticket does not exist");

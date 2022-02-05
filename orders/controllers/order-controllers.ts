@@ -14,6 +14,7 @@ const EXPIRATION_SECONDS = 15*60;
 interface TicketDoc extends Document {
     title: string;
     price: number;
+    version: number;
     isReserved: () => boolean
 }
 
@@ -22,6 +23,7 @@ interface OrderDoc extends Document {
     expiresAt: Date;
     status: OrderStatus;
     ticket: TicketDoc;
+    version: number;
 }
 
 interface OrderAttributes {
@@ -115,7 +117,9 @@ const error = validationResult(req);
          id: createdOrder.id, userId: createdOrder.userId, ticket: { 
              id: createdOrder.ticket.id,
              price: createdOrder.ticket.price
-          }, status: OrderStatus.Created, expiresAt: createdOrder.expiresAt.toISOString()
+          }, status: OrderStatus.Created, 
+          version: createdOrder.version,
+          expiresAt: createdOrder.expiresAt.toISOString()
      })
   } catch (error) {
       console.log(error);
@@ -155,10 +159,12 @@ const error = validationResult(req);
     
     try {
         await new OrderCancelledPublisher(natsWraper.client).publish({
-            id: foundOrder.id, status: OrderStatus.Cancelled, userId: userId, ticket: {
+            id: foundOrder.id, status: OrderStatus.Cancelled, 
+            userId: userId, ticket: {
                 id: foundOrder.ticket.id,
                 price: foundOrder.ticket.price
-            }
+            },
+            version: foundOrder.version,
         })
     } catch (error) {
         
