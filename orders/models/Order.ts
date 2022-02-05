@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { OrderStatus } from '@adwesh/common';
+import { updateIfCurrentPlugin } from 'mongoose-update-if-current';
 
 /*Order Statuses
 created - order has been created but the ticket has not been reserved.
@@ -19,5 +20,8 @@ const orderSchema = new Schema({
     expiresAt: { type: Schema.Types.Date, required: true },
     ticket: { type: Schema.Types.ObjectId, required: true, ref: 'Ticket' }
 }, { timestamps: true, toJSON: { getters: true } });
+
+orderSchema.set('versionKey', 'version');
+orderSchema.plugin(updateIfCurrentPlugin);
 
 export default mongoose.model('order', orderSchema);
