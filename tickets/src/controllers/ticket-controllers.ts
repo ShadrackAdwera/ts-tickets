@@ -11,13 +11,15 @@ import Ticket from '../models/Ticket';
 interface TicketAttributes {
     title: string;
     price: number;
-    userId: string; 
+    userId: string;
+    orderId?: string; 
 }
 
 interface TicketDoc extends Document {
     title: string;
     price: number;
     userId: string;
+    orderId?: string; 
     version: number;
 }
 
