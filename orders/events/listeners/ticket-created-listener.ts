@@ -32,6 +32,7 @@ export class TicketCreatedListener extends Listener<TicketCreatedEvent> {
             msg.ack();
         } catch (error) {
             console.log(error);
+            throw new Error('An error occured');
         }
     }
     
