@@ -9,7 +9,6 @@ interface TicketDoc extends Document {
   id: string;
   title: string;
   price: number;
-  version: number;
 }
 
 export class TicketUpdatedListener extends Listener<TicketUpdatedEvent> {

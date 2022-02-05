@@ -14,7 +14,6 @@ const EXPIRATION_SECONDS = 15*60;
 interface TicketDoc extends Document {
     title: string;
     price: number;
-    version: number;
     isReserved: () => boolean
 }
 

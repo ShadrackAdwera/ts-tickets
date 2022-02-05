@@ -5,9 +5,8 @@ import Order from './Order';
 const ticketSchema = new Schema({
     id: { type: String, required: true },
     title: { type: String, required: true },
-    price: { type: String, required: true, min: 0 },
-    version: { type: Number, required: true }
-}, { _id: false });
+    price: { type: Number, required: true, min: 0 }
+});
 
 ticketSchema.methods.isReserved = async function() {
     const foundOrder = await Order.findOne({
