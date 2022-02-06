@@ -1,1 +1,1 @@
-export const ORDERS_QUEUE_GROUP = 'tickets-service';
+export const TICKETS_QUEUE_GROUP = 'tickets-service';

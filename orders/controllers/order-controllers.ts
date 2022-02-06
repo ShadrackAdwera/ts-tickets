@@ -67,18 +67,18 @@ const error = validationResult(req);
   if (!error.isEmpty()) {
     return next(new HttpError("Invalid inputs", 422));
   }
-  let foundTicket: TicketDoc;
+  let foundTicket: TicketDoc[];
   let ticketReservationStatus;
 
     //check for ticket existense in the DB
     const { ticketId } = req.body;
     try {
-        foundTicket = await Ticket.findById(ticketId).exec();
+        foundTicket = await Ticket.find({id: ticketId}).exec();
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
 
-    if(!foundTicket) {
+    if(foundTicket.length===0) {
         return next(new HttpError('This ticket does not exist', 404));
     }
 
@@ -87,7 +87,7 @@ const error = validationResult(req);
 
 //check if ticket is not reserved
     try {
-        ticketReservationStatus = await foundTicket.isReserved();
+        ticketReservationStatus = await foundTicket[0].isReserved();
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
@@ -101,7 +101,7 @@ const error = validationResult(req);
       userId, 
       expiresAt: expiration.setSeconds(expiration.getSeconds() + EXPIRATION_SECONDS),
       status: OrderStatus.Created, 
-      ticket: foundTicket
+      ticket: foundTicket[0]
   }) 
 
   try {
@@ -115,8 +115,8 @@ const error = validationResult(req);
   try {
      await new OrderCreatedPublisher(natsWraper.client).publish({
          id: createdOrder.id, userId: createdOrder.userId, ticket: { 
-             id: createdOrder.ticket.id,
-             price: createdOrder.ticket.price
+             id: foundTicket[0].id,
+             price: foundTicket[0].price
           }, status: OrderStatus.Created, 
           version: createdOrder.version,
           expiresAt: createdOrder.expiresAt.toISOString()
@@ -132,11 +132,13 @@ const error = validationResult(req);
  const cancelOrder = async(req: Request, res: Response, next: NextFunction) => {
     const { id  } = req.params;
     let foundOrder: OrderDoc;
+    let foundTicket: TicketDoc;
     let userId = req.user?.userId as string
     // find the order
     try {
-        foundOrder = await Order.findById(id).populate('ticket').exec();
+        foundOrder = await Order.findById(id).exec();
     } catch (error) {
+        console.log(error);
         return next(new HttpError('An error occured, try again', 500));
     }
 
@@ -144,8 +146,19 @@ const error = validationResult(req);
         return next(new HttpError('This order does not exist', 404));
     }
 
+    try {
+        foundTicket = await Ticket.findById(foundOrder.ticket).exec();
+    } catch (error) {
+        console.log(error);
+        return next(new HttpError('An error occured, try again', 500));
+    }
+
+    if(!foundTicket) {
+        return next(new HttpError('This ticket does not exist', 404));
+    }
+
     // authorization
-    if(foundOrder.userId!== userId) {
+    if(foundOrder.userId.toString()!== userId) {
         return next(new HttpError('You are not authorized to perform this action', 401));
     }
 
@@ -154,6 +167,7 @@ const error = validationResult(req);
     try {
         await foundOrder.save();
     } catch (error) {
+        console.log(error);
         return next(new HttpError('An error occured, try again', 500));
     }
     
@@ -161,8 +175,8 @@ const error = validationResult(req);
         await new OrderCancelledPublisher(natsWraper.client).publish({
             id: foundOrder.id, status: OrderStatus.Cancelled, 
             userId: userId, ticket: {
-                id: foundOrder.ticket.id,
-                price: foundOrder.ticket.price
+                id: foundTicket.id,
+                price: foundTicket.price
             },
             version: foundOrder.version,
         })

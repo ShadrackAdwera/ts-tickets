@@ -1,9 +1,11 @@
 import { Document } from 'mongoose';
-import { Subjects, Listener, OrderCreatedEvent, OrderStatus } from '@adwesh/common';
+import { Subjects, Listener, OrderCreatedEvent } from '@adwesh/common';
 import { Message } from 'node-nats-streaming';
 
-import { ORDERS_QUEUE_GROUP } from './constants';
+import { TICKETS_QUEUE_GROUP } from './constants';
 import Ticket from '../../models/Ticket';
+import { TicketUpdatedPublisher } from '../publishers/ticket-updated-publisher';
+import { natsWraper } from '../../nats-wrapper';
 
 
 interface TicketDoc extends Document {
@@ -11,11 +13,12 @@ interface TicketDoc extends Document {
     price: number;
     userId: string;
     orderId: string;
+    version: number;
 }
 
 export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
     subject: Subjects.OrderCreated = Subjects.OrderCreated;
-    queueGroupName: string = ORDERS_QUEUE_GROUP;
+    queueGroupName: string = TICKETS_QUEUE_GROUP;
     async onMessage(data: OrderCreatedEvent['data'], msg: Message) {
         let foundTicket: TicketDoc;
 
@@ -27,6 +30,14 @@ export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
         foundTicket.orderId = data.id;
         try {
             await foundTicket.save();
+            await new TicketUpdatedPublisher(this.client).publish({
+                id: foundTicket.id,
+                price: foundTicket.price,
+                title: foundTicket.title,
+                userId: foundTicket.userId,
+                orderId: foundTicket.orderId,
+                version: foundTicket.version
+            })
             msg.ack();
         } catch (error) {
             throw new Error('An error occured, try again');

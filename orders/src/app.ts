@@ -16,7 +16,7 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   });
 
 //use routes
-app.use('/api/routes', orderRoutes);
+app.use('/api/orders', orderRoutes);
 
 app.use((_req: Request, _res: Response, _next: NextFunction) => {
     throw new HttpError('This method / route does not exist', 404);
