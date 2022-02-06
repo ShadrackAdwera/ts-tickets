@@ -38,9 +38,10 @@ interface OrderAttributes {
 const getOrders = async(req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.userId;
     let foundOrders: OrderDoc[];
+    //const populateQuery = [{ path: 'ticket', select: ['title','price', 'id'] } ]
 
     try {
-        foundOrders = await Order.find({ userId }).populate('ticket').exec();
+        foundOrders = await Order.find({ userId }).exec();
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
@@ -52,7 +53,7 @@ const getOrderById = async(req: Request, res: Response, next: NextFunction) => {
     let foundOrder
 
     try {
-        foundOrder = await Order.find({ id: id, userId: req.user?.userId }).populate('ticket').exec();    
+        foundOrder = await Order.find({ id: id, userId: req.user?.userId }).exec();    
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
