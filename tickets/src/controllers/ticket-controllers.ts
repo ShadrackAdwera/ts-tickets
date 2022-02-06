@@ -127,6 +127,10 @@ const updateTicket = async(req: Request, res: Response, next: NextFunction) => {
         return next(new HttpError('This ticket does not exist!', 404));
     }
 
+    if(ticket.orderId) {
+        return next(new HttpError('This action cannot be performed on this ticket as it has been reserved!', 403));
+    }
+
     if(ticket.userId.toString() !== foundUserId) {
         return next(new HttpError('You are not authorized to perform this action', 403));
     }
