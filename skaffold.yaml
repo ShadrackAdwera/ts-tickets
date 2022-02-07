@@ -40,6 +40,14 @@ build:
         manual:
           - dest: .
             src: 'src/**/*.ts'
+    - image: adwera/ts-payments
+      context: payments
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - dest: .
+            src: 'src/**/*.ts'
     # - image: adwera/ts-client
     #   context: client
     #   docker:
