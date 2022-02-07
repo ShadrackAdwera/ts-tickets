@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments
+  template:
+    metadata:
+      labels:
+        app: payments
+    spec:
+      containers:
+        - name: payments
+          image: adwera/ts-payments
+          env:
+            - name: MONGO_URI
+              value: 'mongodb://payments-mongo-service:27017/payments'
+            - name: NATS_CLUSTER_ID
+              value: 'ticketing'
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NATS_URI
+              value: 'http://nats-service:4222'
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-service
+spec:
+  selector:
+    app: payments
+  type: LoadBalancer
+  ports:
+    - name: payments
+      protocol: TCP
+      port: 5003
+      targetPort: 5003
