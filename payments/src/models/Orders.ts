@@ -29,6 +29,9 @@ const orderSchema = new Schema({
     price: { type: String, required: true }
 }, { timestamps: true, toJSON: { getters: true } });
 
+orderSchema.set('versionKey', 'version');
+orderSchema.plugin(updateIfCurrentPlugin);
+
 orderSchema.statics.build = (attribs: OrderAttributes) => {
     return new Order({
         orderId: attribs.orderId,
@@ -38,8 +41,6 @@ orderSchema.statics.build = (attribs: OrderAttributes) => {
         price: attribs.price
     });
 }
-orderSchema.set('versionKey', 'version');
-orderSchema.plugin(updateIfCurrentPlugin);
 
 const Order = mongoose.model<OrdersDoc, OrderModel>('order', orderSchema);
 export { Order };
