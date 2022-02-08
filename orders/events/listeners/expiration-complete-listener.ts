@@ -35,6 +35,10 @@ export class ExpirationCompleteListener extends Listener<ExpirationCompleteEvent
             throw new Error('This order does not exist!');
         }
 
+        if(foundOrder.status === OrderStatus.Complete) {
+            return msg.ack();
+        }
+
         foundTicket = await Ticket.findById(foundOrder.ticket).exec();
 
         if(!foundTicket) {
