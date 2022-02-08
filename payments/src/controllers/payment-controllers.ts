@@ -5,6 +5,8 @@ import { HttpError, OrderStatus } from '@adwesh/common';
 import { Order } from '../models/Orders';
 import { Payment } from '../models/Payment';
 import { stripe } from '../stripe';
+import { PaymentCreatedPublisher } from '../events/publishers/payment-created-publisher';
+import { natsWraper } from '../natsWrapper';
 
 const createPayment = async(req: Request, res: Response, next: NextFunction) => {
 
@@ -50,6 +52,10 @@ const createPayment = async(req: Request, res: Response, next: NextFunction) => 
         });
 
         await payment.save();
+
+        await new PaymentCreatedPublisher(natsWraper.client).publish({
+            orderId: payment.orderId, stripeId: payment.stripeId, id: payment.id
+        });
     } catch (error) {
         console.log(error);
         return next(new HttpError('An error occured, try again', 500));
