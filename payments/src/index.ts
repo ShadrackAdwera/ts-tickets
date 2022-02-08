@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 
 import app from './app';
 import { natsWraper } from './natsWrapper';
+import { OrderCreatedListener } from './events/listeners/order-created-listener';
+import { OrderCancelledListener } from './events/listeners/order-cancelled-listener';
 
 if(!process.env.JWT_KEY) {
     throw new HttpError('JWT must be defined',400);
@@ -35,6 +37,10 @@ const start = async() => {
 
         process.on('SIGINT', () => natsWraper.client.close());
         process.on('SIGTERM', () => natsWraper.client.close());
+
+        new OrderCreatedListener(natsWraper.client).listen();   
+        new OrderCancelledListener(natsWraper.client).listen();
+
 
         await mongoose.connect(process.env.MONGO_URI!);
         app.listen(5003);
