@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 import { HttpError, OrderStatus } from '@adwesh/common';
 
 import { Order } from '../models/Orders';
+import { Payment } from '../models/Payment';
 import { stripe } from '../stripe';
 
 const createPayment = async(req: Request, res: Response, next: NextFunction) => {
@@ -38,14 +39,22 @@ const createPayment = async(req: Request, res: Response, next: NextFunction) => 
     }
 
     try {
-        await stripe.charges.create({
+        const { id } = await stripe.charges.create({
             currency: 'usd',
             amount: foundOrder.price * 100,
             source: token
-        })
+        });
+
+        const payment = new Payment({
+            orderId, stripeId: id
+        });
+
+        await payment.save();
     } catch (error) {
         console.log(error);
+        return next(new HttpError('An error occured, try again', 500));
     }
+
     res.status(201).json({message: 'The charge has been successfully created'});
 
 }
