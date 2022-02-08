@@ -1,10 +1,10 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import { updateIfCurrentPlugin } from 'mongoose-update-if-current';
 
-interface PaymentsAttributes {
-    orderId: string;
-    stripeId: string;
-}
+// interface PaymentsAttributes {
+//     orderId: string;
+//     stripeId: string;
+// }
 
 interface PaymentDoc extends Document {
     orderId: string;
@@ -22,12 +22,6 @@ const paymentSchema = new Schema({
     stripeId: { type:String, required: true }
 }, { timestamps: true, toJSON: { getters: true } });
 
-paymentSchema.statics.build = (attribs: PaymentsAttributes) => {
-    return new Payment({
-        orderId: attribs.orderId,
-        stripeId: attribs.stripeId
-    })
-}
 
 paymentSchema.set('versionKey', 'version');
 paymentSchema.plugin(updateIfCurrentPlugin);
