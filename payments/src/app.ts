@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { HttpError } from '@adwesh/common';
 
+import paymentsRoutes from './routes/payment-routes';
+
 const app = express();
 
 app.use(express.json());
@@ -14,7 +16,7 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   });
   
 //use routes
-
+app.use('/api/payments', paymentsRoutes);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
     throw new HttpError('Unable to find method / route', 404);

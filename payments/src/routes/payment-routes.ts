@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.use(checkAuth);
 
-router.post('/', [
+router.post('/new', [
     body('orderId').not().isEmpty(),
     body('token').not().isEmpty()
 ], createPayment);
