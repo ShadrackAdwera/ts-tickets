@@ -10,8 +10,8 @@ export class OrderCancelledListener extends Listener<OrderCancelledEvent> {
     queueGroupName: string = PAYMENT_QUEUE_GROUP;
     
     async onMessage(data: OrderCancelledEvent['data'], msg: Message): Promise<void> {
-        const { id } = data;
-        let foundOrder = await Order.find({orderId: id}).exec();
+        const { id, version } = data;
+        let foundOrder = await Order.find({orderId: id, version: version-1 }).exec();
 
         if(!foundOrder || foundOrder.length===0) {
             throw new Error('This order does not exist');
